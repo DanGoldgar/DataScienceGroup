@@ -4,7 +4,9 @@ import openpyxl
 import matplotlib
 import matplotlib.pyplot as plt
 
+## TRAINING DATA
 
+# Read data
 connect_df = pd.read_csv('widsdatathon2025/TRAIN_NEW/Train_Connectome.csv')
 factors_df = pd.read_excel('widsdatathon2025/TRAIN_NEW/Train_Outcome.xlsx')
 combined_df = pd.concat([connect_df, factors_df], axis=1)
@@ -40,20 +42,18 @@ plt.xlabel('Delta')
 plt.title('Histogram of edge mean differences ~ Sex')
 plt.show()
 
-# Create dataframe from sorted values series
-sex_diff = pd.DataFrame([sex_sorted])
-
 # Top n values
-sex_delta = sex_delta.drop('ADHD_Outcome')
+sex_delta = sex_delta.drop(['Sex_F', 'ADHD_Outcome'])
 sex_top_n = sex_delta.nlargest(n=1000, keep='all')
 sex_n_edges = list(sex_top_n.index)
-print(sex_n_edges)
+print(sex_top_n)
 
 print(combined_df.shape)
 sex_train_final = combined_df.loc[:, sex_n_edges]
 print(sex_train_final.shape)
 
-sex_train_final.to_csv('widsdatathon2025/Processed/sex_train_final.csv', index=False)
+# Write to new .csv file
+sex_train_final.to_csv('widsdatathon2025/Processed/topn_edges_sex_trn.csv', index=False)
 
 ## ADHD Section
 
@@ -77,17 +77,39 @@ plt.xlabel('Delta')
 plt.title('Histogram of edge mean differences ~ ADHD')
 plt.show()
 
-# Create dataframe
-adhd_diff = pd.DataFrame([adhd_sorted])
-
 # Top n values
-adhd_delta = adhd_delta.drop('Sex_F')
+adhd_delta = adhd_delta.drop(['Sex_F', 'ADHD_Outcome'])
 adhd_top_n = adhd_delta.nlargest(n=1000, keep='all')
 adhd_n_edges = list(adhd_top_n.index)
-print(adhd_n_edges)
+print(adhd_top_n)
 
 print(combined_df.shape)
 adhd_train_final = combined_df.loc[:, adhd_n_edges]
 print(adhd_train_final.shape)
 
-adhd_train_final.to_csv('widsdatathon2025/Processed/adhd_train_final.csv', index=False)
+# Write to new .csv file
+adhd_train_final.to_csv('widsdatathon2025/Processed/topn_edges_adhd_trn.csv', index=False)
+
+## TESTING DATA
+
+# Read Testing data
+connect_df_test = pd.read_csv('widsdatathon2025/TEST/Test_Connectome.csv')
+print(connect_df_test.shape)
+
+# Drop ID column
+connect_df_test.drop(columns=['participant_id'], inplace=True)
+print(connect_df_test.shape)
+
+## Slice by top edges for sex factor
+sex_test_final = connect_df_test.loc[:, sex_n_edges]
+print(sex_test_final.shape)
+
+# Write to new .csv file
+sex_test_final.to_csv('widsdatathon2025/Processed/topn_edges_sex_tst.csv', index=False)
+
+## Slice by top edges for ADHD factor
+adhd_test_final = connect_df_test.loc[:, adhd_n_edges]
+print(adhd_test_final.shape)
+
+# Write to new .csv file
+adhd_test_final.to_csv('widsdatathon2025/Processed/topn_edges_adhd_tst.csv', index=False)
